@@ -21,3 +21,16 @@ self.addEventListener('activate', function (event) {
 		});
 	}));
 });
+
+// GitHub Pages erlaubt Browsern, Dateien 10 Minuten aus dem eigenen Speicher zu nehmen. Darum fragt der
+// Worker bei jeder Datei der Seite nach, ob es eine neuere gibt (kostet nur eine kurze Anfrage, wenn
+// sich nichts geaendert hat). So ist ein neues Update sofort da und nicht erst nach 10 Minuten.
+self.addEventListener('fetch', function (event) {
+	var req = event.request;
+	if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) {
+		return;
+	}
+	event.respondWith(fetch(req, { cache: 'no-cache' }).catch(function () {
+		return fetch(req);
+	}));
+});
